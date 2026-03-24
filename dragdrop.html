@@ -10,20 +10,31 @@
     padding: 20px;
   }
 
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 150px 150px; /* text | target | image */
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
 
-  .text-box {
-    padding: 10px;
-    border: 2px solid #ccc;
-    border-radius: 6px;
-    background: #f7f7f7;
-  }
+.row {
+  display: grid;
+  grid-template-columns: 570px 150px 150px; /* text | target | image */
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+
+  
+.text-box {
+  width: 560px;     
+  height: 140px;    /* same as target box */
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background: #f7f7f7;
+  display: flex;            /* center text nicely */
+  justify-content: center;  /* center horizontally */
+  align-items: center;      /* center vertically */
+  text-align: center;       /* wrap nicely */
+  box-sizing: border-box;   /* keeps padding inside the 140px box */
+}
+
 
   .target-box {
     width: 140px;
