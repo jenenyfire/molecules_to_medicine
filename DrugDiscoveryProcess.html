@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Drug Discovery roles</title>
+
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, 180px);
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.text-box {
+  width: 170px;
+  height: 70px;
+  padding: 2px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  background: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.target-box {
+  width: 140px;
+  height: 140px;
+  border: 2px dashed #888;
+  border-radius: 6px;
+}
+
+.target-box.empty {
+  border: none;
+  background: transparent;
+}
+
+.text-box.correct { border-color: #2e7d32; background: #c8e6c9; }
+.text-box.wrong { border-color: #c62828; background: #ffcdd2; }
+
+.draggable {
+  width: 140px;
+  cursor: grab;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  transition: transform 0.25s ease;
+  touch-action: none;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+</head>
+<body>
+
+<h2>Drag each image into the correct target box</h2>
+
+<button id="checkButton" style="padding:10px 20px; font-size:16px; margin-bottom:20px; cursor:pointer;">
+  Check Answers
+</button>
+
+<div id="rows-container">
+
+<!-- ROW 1: labels -->
+<div class="row">
+  <div class="text-box">Discovery ~ 6 years</div>
+  <div class="text-box">Preclinical ~ 3 years</div>
+  <div class="text-box">Clinical trials ~ 7 years</div>
+  <div class="text-box">Regulatory ~ 1 year</div>
+  <div class="text-box">Post-market - indefinite</div>
+</div>
+
+<!-- ROW 2 -->
+<div class="row">
+  <div class="target-box" data-answer="Biochemist,Medchem"></div>
+  <div class="target-box" data-answer="Pharmacologist"></div>
+  <div class="target-box" data-answer="Pharmacologist,doctor"></div>
+  <div class="target-box" data-answer="Regulator"></div>
+  <div class="target-box" data-answer="doctor,Pharmacist"></div>
+</div>
+
+<!-- ROW 3 -->
+<div class="row">
+  <div class="target-box" data-answer="Biochemist,Medchem"></div>
+  <div class="target-box empty"></div>
+  <div class="target-box" data-answer="Pharmacologist,doctor"></div>
+  <div class="target-box empty"></div>
+  <div class="target-box" data-answer="doctor,Pharmacist"></div>
+</div>
+
+<!-- ROW 4: draggables -->
+<div class="row">
+  <img src="pharmacist.png" class="draggable" data-id="Pharmacist">
+  <img src="Regulator.png" class="draggable" data-id="Regulator">
+  <img src="Medchem.png" class="draggable" data-id="Medchem">
+  <img src="Pharmacologist.png" class="draggable" data-id="Pharmacologist">
+  <img src="doctor.png" class="draggable" data-id="doctor">
+  <img src="Pharmacologist.png" class="draggable" data-id="Pharmacologist">
+  <img src="doctor.png" class="draggable" data-id="doctor">
+  <img src="Biochemist.png" class="draggable" data-id="Biochemist">
+</div>
+
+</div> <!-- end rows-container -->
+
+<script>
+// DRAGGING
+interact('.draggable').draggable({
+  inertia: false,
+  listeners: {
+    move(event) {
+      const target = event.target;
+      const x = (parseFloat(target.dataset.x) || 0) + event.dx;
+      const y = (parseFloat(target.dataset.y) || 0) + event.dy;
+
+      target.style.transform = `translate(${x}px, ${y}px)`;
+      target.dataset.x = x;
+      target.dataset.y = y;
+    }
+  }
+});
+
+// DROPZONE
+interact('.target-box').dropzone({
+  ondrop(event) {
+    const img = event.relatedTarget;
+    const zone = event.target;
+
+    img.style.transform = 'translate(0,0)';
+    img.dataset.x = 0;
+    img.dataset.y = 0;
+
+    zone.appendChild(img);
+  }
+});
+
+// CHECK ANSWERS — column-based
+document.getElementById("checkButton").addEventListener("click", () => {
+
+  const rows = document.querySelectorAll('#rows-container .row');
+
+  const labels = rows[0];
+  const row2   = rows[1];
+  const row3   = rows[2];
+
+  const columnCount = labels.children.length;
+
+  for (let col = 0; col < columnCount; col++) {
+
+    const textBox = labels.children[col];
+
+    const targets = [ row2.children[col], row3.children[col] ];
+
+    let columnIsCorrect = true;   // we assume it's correct unless proven wrong
+    let hasCheckableCells = false;
+
+    for (const target of targets) {
+
+      // Skip blank cells entirely
+      if (target.classList.contains("empty")) {
+        continue;
+      }
+
+      hasCheckableCells = true;
+
+      const img = target.querySelector('img');
+      const allowed = target.dataset.answer.split(",").map(a => a.trim());
+
+      // missing image = wrong
+      if (!img) {
+        columnIsCorrect = false;
+        continue;
+      }
+
+      // wrong image = wrong
+      if (!allowed.includes(img.dataset.id)) {
+        columnIsCorrect = false;
+      }
+    }
+
+    // If no real target boxes exist, skip column
+    if (!hasCheckableCells) continue;
+
+    // Now mark column
+    if (columnIsCorrect) {
+      textBox.classList.add("correct");
+      textBox.classList.remove("wrong");
+    } else {
+      textBox.classList.add("wrong");
+      textBox.classList.remove("correct");
+    }
+  }
+});
+</script>
+
+</body>
+</html>
